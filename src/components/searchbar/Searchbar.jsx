@@ -1,12 +1,24 @@
-import React from 'react';
+import React from "react";
 import styles from "./Searchbar.module.css";
 
-const Searchbar = () => {
+const Searchbar = ({ onSubmit }) => {
   return (
-    <div>
-      <p>Searchbar</p>
-    </div>
-  )
-}
+    <header className={styles.Searchbar}>
+      <form className={styles.SearchForm}>
+        <button type="submit" className={styles.SearchFormButton}>
+          <span className={styles.SearchFormButtonLabel}>Search</span>
+        </button>
 
-export default Searchbar
+        <input
+          className={styles.SearchFormInput}
+          type="text"
+          autoComplete="off"
+          autoFocus
+          placeholder="Search images and photos"
+        />
+      </form>
+    </header>
+  );
+};
+
+export default Searchbar;
