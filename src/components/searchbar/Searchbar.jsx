@@ -1,11 +1,22 @@
-import React from "react";
+import { useState } from "react";
 import styles from "./Searchbar.module.css";
 
 const Searchbar = ({ onSubmit }) => {
+
+  const [value, setValue] = useState('');
+  const inputValue = ( {target} ) => {
+    setValue(target.value);
+  };
+
+  const submitValue = (evt) => {
+    evt.preventDefault();
+    onSubmit(value);
+  };
+
   return (
     <header className={styles.Searchbar}>
       <form className={styles.SearchForm}>
-        <button type="submit" className={styles.SearchFormButton}>
+        <button type="submit" className={styles.SearchFormButton} onSubmit={submitValue}>
           <span className={styles.SearchFormButtonLabel}>Search</span>
         </button>
 
@@ -15,6 +26,7 @@ const Searchbar = ({ onSubmit }) => {
           autoComplete="off"
           autoFocus
           placeholder="Search images and photos"
+          onChange={inputValue }
         />
       </form>
     </header>
