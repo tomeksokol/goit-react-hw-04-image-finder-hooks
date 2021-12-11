@@ -38,9 +38,17 @@ class App extends Component {
   toggleModal = () => {
     this.setState(({ showModal }) => ({
       showModal: !showModal,
-    }))
-  }
+    }));
+  };
 
+  scrollPage = () => {
+    setTimeout(() => {
+      window.scrollBy({
+        top: document.documentElement.clientHeight - 160,
+        behavior: "smooth",
+      });
+    }, 1000);
+  };
 
   //Events
 
@@ -56,6 +64,7 @@ class App extends Component {
   loadMore = (evt) => {
     evt.preventDefault();
     this.fetchImages();
+    this.scrollPage();
   };
 
   openModal = (evt) => {
@@ -64,13 +73,13 @@ class App extends Component {
       tags: evt.target.alt,
     }));
     this.toggleModal();
-  }
+  };
 
   //Fetches
 
   fetchInitialView = () => {
     fetch(
-      `https://pixabay.com/api/?key=23580980-4f75151f85975025bb6074227&q=&image_type=photo&orientation=horizontal&safesearch=true&page=1&per_page=12`
+      `https://pixabay.com/api/?key=23580980-4f75151f85975025bb6074227&q=&image_type=photo&orientation=horizontal&safesearch=true&page=1&per_page=15`
     )
       .then((data) => data.json())
       .then((keyword) => {
@@ -130,20 +139,24 @@ class App extends Component {
 
         {this.state.error && <ErrorAlert textError={this.state.error} />}
 
-        <ImageGallery images={this.state.images} openModal={this.openModal}/>
+        <ImageGallery images={this.state.images} openModal={this.openModal} />
 
         {this.state.isLoading && <FetchLoader />}
 
         {!this.state.showButton &&
           !this.state.isLoading &&
-          this.state.images.length >= 12 &&
+          this.state.images.length >= 15 &&
           !this.state.error && (
             <Button label={"Load more"} fetchMoreImages={this.loadMore} />
           )}
 
-          {this.state.showModal && <Modal largeImageURL={this.state.largeImageURL} tags={this.state.tags} toggleModal={this.toggleModal}/>}
-
-          
+        {this.state.showModal && (
+          <Modal
+            largeImageURL={this.state.largeImageURL}
+            tags={this.state.tags}
+            toggleModal={this.toggleModal}
+          />
+        )}
 
         <ToastContainer autoClose={3700} />
       </div>

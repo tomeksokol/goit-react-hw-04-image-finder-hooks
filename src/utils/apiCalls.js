@@ -1,8 +1,8 @@
 import axios from "axios";
-import API_KEY from "./constans";
+import {API_KEY, PER_PAGE} from "./constans";
 
 const fetchData = async (keyword, page) => {
-  const { data } = await axios.get(`https://pixabay.com/api/?key=${API_KEY}&q=${keyword}&image_type=photo&orientation=horizontal&safesearch=true&page=${page}&per_page=12`);
+  const { data } = await axios.get(`https://pixabay.com/api/?key=${API_KEY}&q=${keyword}&image_type=photo&orientation=horizontal&safesearch=true&page=${page}&per_page=${PER_PAGE}`);
   return data.hits;
 };
 
