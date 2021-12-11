@@ -14,7 +14,8 @@ const ImageGalleryItem = ({
       src={webformatURL} 
       alt={tags}
       data-source={largeImageURL}
-      onClick={openModal} 
+      onClick={openModal}
+      loading="lazy"
       />
     </li>
   );
