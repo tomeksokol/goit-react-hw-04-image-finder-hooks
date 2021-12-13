@@ -1,8 +1,21 @@
+import { useState } from "react";
 import styles from "./Searchbar.module.css";
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-const Searchbar = ({ onSubmit, inputChange, value }) => {
 
+const Searchbar = ({ onHandleSubmit }) => {
 
+  const [keyword, setKeyword] = useState("");
+
+  const onSubmit = (evt) => {
+    evt.preventDefault();
+    if (keyword.trim() === "") {
+      return toast.info("🤔 Please enter a value to search images");
+    }
+    onHandleSubmit(keyword);
+    setKeyword("");
+  };
 
   return (
     <header className={styles.Searchbar}>
@@ -26,11 +39,10 @@ const Searchbar = ({ onSubmit, inputChange, value }) => {
         <input
           className={styles.SearchFormInput}
           type="text"
-          value={value}
           autoComplete="off"
           autoFocus
           placeholder="Search images and photos"
-          onChange={ inputChange }
+          onChange={({ target }) => setKeyword(target.value)}
         />
       </form>
     </header>

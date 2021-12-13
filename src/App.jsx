@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import { useState, useEffect } from "react";
 import "./App.css";
 
 import Searchbar from "./components/searchbar/Searchbar";
@@ -9,39 +9,30 @@ import FetchLoader from "./components/loader/FetchLoader";
 import Modal from "./components/modal/Modal";
 
 import fetchData from "./utils/apiCalls";
-import "react-toastify/dist/ReactToastify.css";
-import { ToastContainer, toast } from "react-toastify";
+// import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "react-toastify";
 
-class App extends Component {
+function App() {
   //States
 
-  state = {
-    keyword: "",
-    images: [],
-    page: 1,
-    isLoading: false,
-    showModal: false,
-    error: null,
-    totalPages: 0,
-    showButton: true,
-    largeImageURL: "",
-    tags: "",
-  };
+  const [keyword, setKeyword] = useState("");
+  const [images, setImages] = useState([]);
+  const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [error, setError] = useState(null);
+  const [showButton, setShowButton] = useState(true);
+  const [largeImageURL, setLargeImageURL] = useState("");
+  const [tags, setTags] = useState("");
 
   //Function
-  toggleLoader = () => {
-    this.setState(({ isLoading }) => ({
-      isLoading: !isLoading,
-    }));
+ 
+
+  const toggleModal = () => {
+    setShowModal(!showModal);
   };
 
-  toggleModal = () => {
-    this.setState(({ showModal }) => ({
-      showModal: !showModal,
-    }));
-  };
-
-  scrollPage = () => {
+  const scrollPage = () => {
     setTimeout(() => {
       window.scrollBy({
         top: document.documentElement.clientHeight - 160,
@@ -50,118 +41,101 @@ class App extends Component {
     }, 1000);
   };
 
+  const searchImages = (newSearch) => {
+    setKeyword(newSearch);
+    setImages([]);
+    setPage(1);
+    setError(null);
+    setIsLoading(true);
+  }
+ 
   //Events
 
-  inputValue = (evt) => {
-    this.setState({ keyword: evt.target.value });
-  };
-
-  submitValue = (evt) => {
+  const loadMore = (evt) => {
     evt.preventDefault();
-    this.fetchImages();
+    setIsLoading(true);
+    setPage(prevPage => prevPage + 1);
+    // fetchImages();
+    scrollPage();
   };
 
-  loadMore = (evt) => {
-    evt.preventDefault();
-    this.fetchImages();
-    this.scrollPage();
-  };
-
-  openModal = (evt) => {
-    this.setState(({ largeImageURL, tags }) => ({
-      largeImageURL: evt.target.dataset.source,
-      tags: evt.target.alt,
-    }));
-    this.toggleModal();
+  const openModal = (evt) => {
+    setLargeImageURL(evt.target.dataset.source);
+    setTags(evt.target.alt);
+    toggleModal();
   };
 
   //Fetches
 
-  fetchInitialView = () => {
+  const fetchInitialView = () => {
     fetch(
       `https://pixabay.com/api/?key=23580980-4f75151f85975025bb6074227&q=&image_type=photo&orientation=horizontal&safesearch=true&page=1&per_page=15`
     )
       .then((data) => data.json())
       .then((keyword) => {
-        this.setState(({ images, showButton }) => ({
-          images: keyword.hits,
-          showButton: true,
-        }));
+        setImages(keyword.hits);
+        setShowButton(true);
       })
       .catch((error) => console.log(error));
   };
 
-  fetchImages = async () => {
-    if (this.state.keyword.trim() === "") {
-      return toast.info("🤔 Please enter a value to search images");
-    }
-    this.toggleLoader();
+  useEffect(() => {
+    fetchInitialView();
+  }, []);
+  
+  useEffect(() => {
+    if (!keyword) return;
 
-    try {
-      const request = await fetchData(this.state.keyword, this.state.page);
-      this.setState(({ images, page, showButton }) => ({
-        images: [...images, ...request],
-        page: page + 1,
-        showButton: false,
-      }));
-
-      if (request.length === 0) {
-        this.setState({
-          error: `😐 No results were found for: ${this.state.keyword}`,
-        });
+    const fetchImages = async () => {
+      try {
+        const request = await fetchData(keyword, page);
+          
+        if (request.length === 0) {
+         return setError(`😐 No results were found for: ${keyword}`)
+        }
+        setImages(prevImages => [...prevImages, ...request]);
+      } catch (error) {
+        setError("😱 Something went wrong. Try again.");
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      this.setState({ error: "😱 Something went wrong. Try again" });
-    } finally {
-      this.toggleLoader();
-    }
-  };
+    };
 
-  // Life cycles
-  componentDidMount() {
-    this.fetchInitialView();
-  }
+    fetchImages();
+  }, [keyword, page])
 
-  componentDidUpdate(_prevProps, prevState) {
-    if (prevState.keyword !== this.state.keyword) {
-      this.setState({ images: [], page: 1, error: null });
-    }
-  }
 
-  render() {
-    return (
-      <div className="App">
-        <Searchbar
-          onSubmit={this.submitValue}
-          inputChange={this.inputValue}
-          value={this.state.keyword}
-        />
+  return (
+    <div className="App">
+      <Searchbar onHandleSubmit={searchImages} />
 
-        {this.state.error && <ErrorAlert textError={this.state.error} />}
+      {error && <ErrorAlert textError={error} />}
 
-        <ImageGallery images={this.state.images} openModal={this.openModal} />
+      {images.length > 0 && !error && (
 
-        {this.state.isLoading && <FetchLoader />}
+      <ImageGallery images={images} openModal={openModal} />
+      )}
 
-        {!this.state.showButton &&
-          !this.state.isLoading &&
-          this.state.images.length >= 15 &&
-          !this.state.error && (
-            <Button label={"Load more"} fetchMoreImages={this.loadMore} />
-          )}
+      {isLoading && <FetchLoader />}
 
-        {this.state.showModal && (
-          <Modal
-            largeImageURL={this.state.largeImageURL}
-            tags={this.state.tags}
-            toggleModal={this.toggleModal}
-          />
+      {!showButton &&
+        !isLoading &&
+        images.length >= 15 &&
+        !error && (
+          <Button label={"Load more"} fetchMoreImages={loadMore} />
         )}
 
-        <ToastContainer autoClose={3700} />
-      </div>
-    );
-  }
+      {showModal && (
+        <Modal
+          largeImageURL={largeImageURL}
+          tags={tags}
+          toggleModal={toggleModal}
+        />
+      )}
+
+      <ToastContainer autoClose={3700} />
+    </div>
+  );
 }
 
 export default App;
