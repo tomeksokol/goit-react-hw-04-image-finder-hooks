@@ -21,12 +21,11 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState(null);
-  const [showButton, setShowButton] = useState(true);
+  const [showButton, setShowButton] = useState(false);
   const [largeImageURL, setLargeImageURL] = useState("");
   const [tags, setTags] = useState("");
 
   //Function
- 
 
   const toggleModal = () => {
     setShowModal(!showModal);
@@ -47,14 +46,14 @@ function App() {
     setPage(1);
     setError(null);
     setIsLoading(true);
-  }
- 
+  };
+
   //Events
 
   const loadMore = (evt) => {
     evt.preventDefault();
     setIsLoading(true);
-    setPage(prevPage => prevPage + 1);
+    setPage((prevPage) => prevPage + 1);
     // fetchImages();
     scrollPage();
   };
@@ -74,7 +73,7 @@ function App() {
       .then((data) => data.json())
       .then((keyword) => {
         setImages(keyword.hits);
-        setShowButton(true);
+        setShowButton(false);
       })
       .catch((error) => console.log(error));
   };
@@ -82,18 +81,18 @@ function App() {
   useEffect(() => {
     fetchInitialView();
   }, []);
-  
+
   useEffect(() => {
     if (!keyword) return;
 
     const fetchImages = async () => {
       try {
         const request = await fetchData(keyword, page);
-          
+
         if (request.length === 0) {
-         return setError(`😐 No results were found for: ${keyword}`)
+          return setError(`😐 No results were found for: ${keyword}`);
         }
-        setImages(prevImages => [...prevImages, ...request]);
+        setImages((prevImages) => [...prevImages, ...request]);
       } catch (error) {
         setError("😱 Something went wrong. Try again.");
       } finally {
@@ -102,8 +101,7 @@ function App() {
     };
 
     fetchImages();
-  }, [keyword, page])
-
+  }, [keyword, page]);
 
   return (
     <div className="App">
@@ -112,18 +110,14 @@ function App() {
       {error && <ErrorAlert textError={error} />}
 
       {images.length > 0 && !error && (
-
-      <ImageGallery images={images} openModal={openModal} />
+        <ImageGallery images={images} openModal={openModal} />
       )}
 
       {isLoading && <FetchLoader />}
 
-      {!showButton &&
-        !isLoading &&
-        images.length >= 15 &&
-        !error && (
-          <Button label={"Load more"} fetchMoreImages={loadMore} />
-        )}
+      {!showButton && !isLoading && images.length >= 15 && !error && (
+        <Button label={"Load more"} fetchMoreImages={loadMore} />
+      )}
 
       {showModal && (
         <Modal
